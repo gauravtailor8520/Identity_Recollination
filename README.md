@@ -2,7 +2,11 @@
 
 This project is a Flask application that connects to a MongoDB database to manage user contacts. It allows for the identification and linking of primary and secondary contacts based on email and phone number.
 
-https://github.com/user-attachments/assets/2094ed43-a204-4b41-b792-d51d94e09640
+
+
+https://github.com/user-attachments/assets/d35cdba8-91db-467f-bd43-4ccedfd43aff
+
+
 
 ## Project Structure
 
