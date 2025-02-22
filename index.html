@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        button {
+            background-color: #2563eb;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        button:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .error {
+            display: none;
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .response {
+            display: none;
+            background-color: #f0f9ff;
+            border: 1px solid #2563eb;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .response h3 {
+            color: #2563eb;
+            margin-bottom: 15px;
+        }
+
+        .response-section {
+            margin-bottom: 15px;
+        }
+
+        .response-section strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .response-list {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ideantity Recollination System</h1>
+        <p class="description">Enter contact information to identify mail and contact</p>
+
+        <form id="contactForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="user@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="phoneNumber">Phone Number</label>
+                <input type="tel" id="phoneNumber" placeholder="1234567890">
+                <p id="phoneError" class="error-message">Phone number must be exactly 10 digits</p>
+            </div>
+
+            <button type="submit" id="submitButton">Identify Contact</button>
+        </form>
+
+        <div id="loading" class="loading">Processing...</div>
+        <div id="error" class="error"></div>
+        <div id="response" class="response">
+            <h3>Contact Information Retrieved</h3>
+            <div class="response-section">
+                <strong>Primary Contact ID:</strong>
+                <span id="primaryId"></span>
+            </div>
+            <div class="response-section">
+                <strong>Emails:</strong>
+                <ul id="emailsList" class="response-list"></ul>
+            </div>
+            <div class="response-section">
+                <strong>Phone Numbers:</strong>
+                <ul id="phonesList" class="response-list"></ul>
+            </div>
+            <div class="response-section">
+                <strong>Secondary Contact IDs:</strong>
+                <ul id="secondaryIdsList" class="response-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      const phoneInput = document.getElementById('phoneNumber');
+      const phoneError = document.getElementById('phoneError');
+
+      // Validate phone number length
+      function validatePhoneNumber(phone) {
+          // Remove any non-digit characters
+          const digits = phone.replace(/\D/g, '');
+          return digits.length === 10;
+      }
+
+      phoneInput.addEventListener('input', (e) => {
+          const phone = e.target.value.trim();
+          
+          if (phone && !validatePhoneNumber(phone)) {
+              phoneInput.classList.add('invalid-input');
+              phoneError.style.display = 'block';
+              document.getElementById('submitButton').disabled = true;
+          } else {
+              phoneInput.classList.remove('invalid-input');
+              phoneError.style.display = 'none';
+              // Enable submit if either email or valid phone is present
+              validateForm();
+          }
+      });
+
+      document.getElementById('contactForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const email = document.getElementById('email').value.trim();
+          const phoneNumber = document.getElementById('phoneNumber').value.trim();
+          
+          // Validate phone number if provided
+          if (phoneNumber && !validatePhoneNumber(phoneNumber)) {
+              errorDiv.textContent = 'Phone number must be exactly 10 digits';
+              errorDiv.style.display = 'block';
+              return;
+          }
+
+          // Rest of the submit handler code remains the same
+          const submitButton = document.getElementById('submitButton');
+          const loadingDiv = document.getElementById('loading');
+          const errorDiv = document.getElementById('error');
+          const responseDiv = document.getElementById('response');
+
+          if (!email && !phoneNumber) {
+              errorDiv.textContent = 'Either email or phone number is required';
+              errorDiv.style.display = 'block';
+              return;
+          }
+
+          // Reset display
+          errorDiv.style.display = 'none';
+          responseDiv.style.display = 'none';
+          loadingDiv.style.display = 'block';
+          submitButton.disabled = true;
+
+          try {
+              const response = await fetch('/identify', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                      email,
+                      phoneNumber
+                  }),
+              });
+
+              const data = await response.json();
+
+              if (!response.ok) {
+                  throw new Error(data.error || 'An error occurred');
+              }
+
+              // Display response
+              document.getElementById('primaryId').textContent = data.contact.primaryContactId;
+              
+              const emailsList = document.getElementById('emailsList');
+              const phonesList = document.getElementById('phonesList');
+              const secondaryIdsList = document.getElementById('secondaryIdsList');
+
+              // Clear previous lists
+              emailsList.innerHTML = '';
+              phonesList.innerHTML = '';
+              secondaryIdsList.innerHTML = '';
+
+              // Populate lists
+              data.contact.emails.forEach(email => {
+                  const li = document.createElement('li');
+                  li.textContent = email;
+                  emailsList.appendChild(li);
+              });
+
+              data.contact.phoneNumbers.forEach(phone => {
+                  const li = document.createElement('li');
+                  li.textContent = phone;
+                  phonesList.appendChild(li);
+              });
+
+              data.contact.secondaryContactIds.forEach(id => {
+                  const li = document.createElement('li');
+                  li.textContent = id;
+                  secondaryIdsList.appendChild(li);
+              });
+
+              responseDiv.style.display = 'block';
+          } catch (error) {
+              errorDiv.textContent = error.message;
+              errorDiv.style.display = 'block';
+          } finally {
+              loadingDiv.style.display = 'none';
+              submitButton.disabled = false;
+          }
+      });
+
+      // Enable/disable submit button based on input
+      function validateForm() {
+          const email = document.getElementById('email').value.trim();
+          const phoneNumber = document.getElementById('phoneNumber').value.trim();
+          const submitButton = document.getElementById('submitButton');
+          
+          // Enable submit if either email exists or phone is valid
+          submitButton.disabled = !email && (!phoneNumber || !validatePhoneNumber(phoneNumber));
+      }
+
+      document.getElementById('email').addEventListener('input', validateForm);
+      document.getElementById('phoneNumber').addEventListener('input', validateForm);
+  </script>
+</body>
+</html>
